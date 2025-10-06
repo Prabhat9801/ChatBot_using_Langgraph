@@ -229,27 +229,22 @@ st.markdown("""
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
     }
     
-    /* All main content text */
-    .main p,
-    .main span, 
-    .main div,
-    section[data-testid="stMain"] p,
-    .element-container p,
-    .stMarkdown p,
-    [data-testid="column"] p,
-    [data-testid="column"] div,
-    [data-testid="column"] span {
+    /* All main content text - but NOT inputs, labels, or form elements */
+    .main > div > div > div > h1,
+    .main > div > div > div > h2,
+    .main > div > div > div > h3 {
         color: white !important;
         font-weight: 500;
     }
     
-    /* Subtitle styling */
-    .main p[style*="text-align: center"] {
+    /* Subtitle styling - only for chatbot page */
+    .main > div > div > div:first-child p[style*="text-align: center"] {
         color: rgba(255, 255, 255, 0.95) !important;
         font-weight: 600 !important;
         font-size: 1.15em !important;
         text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         animation: fadeIn 1s ease-out 0.3s both;
+        display: none !important; /* Hide subtitle */
     }
     
     @keyframes fadeIn {
@@ -459,8 +454,9 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* ==================== HIDE ELEMENTS ==================== */
-    .main div[style*="text-align: right"] {
+    /* ==================== HIDE SPECIFIC ELEMENTS ==================== */
+    /* Only hide the menu hint in the header area */
+    .main > div > div > div:first-child [data-testid="column"]:last-child {
         display: none !important;
     }
     
@@ -529,16 +525,29 @@ st.markdown("""
     }
     
     /* ==================== FINAL OVERRIDES ==================== */
-    /* Ensure main content is white */
-    .main * {
+    /* Only force white color on headers in main area */
+    .main h1,
+    .main h2,
+    .main h3 {
         color: white !important;
     }
     
-    /* But keep chat messages dark */
+    /* Keep chat messages, status, and inputs dark */
     .stChatMessage *,
     .stStatus *,
-    .stChatInput * {
+    .stChatInput *,
+    .stTextInput *,
+    input,
+    textarea,
+    label,
+    .stButton button span {
         color: #1a1a2e !important;
+    }
+    
+    /* Make sure form elements are visible */
+    .stTextInput input {
+        color: #1a1a2e !important;
+        background: white !important;
     }
 </style>
 """, unsafe_allow_html=True)
