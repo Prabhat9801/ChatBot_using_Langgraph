@@ -96,10 +96,9 @@ st.markdown("""
         background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
     }
     
-    /* Main headers - high contrast white with shadow */
+    /* Main headers - clean white without shadow */
     .main h1, .main h2, .main h3 {
         color: white !important;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         font-weight: 700 !important;
     }
     
@@ -288,20 +287,17 @@ st.markdown("""
     [data-testid="column"] div,
     [data-testid="column"] span {
         color: white !important;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         font-weight: 500;
     }
     
-    /* Force inline styles to be white with shadow */
+    /* Force inline styles to be white */
     [style*="color: white"] {
         color: white !important;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
     }
     
-    /* Specific fix for subtitle - match header styling */
+    /* Specific fix for subtitle - match header styling exactly */
     .main p[style*="text-align: center"] {
         color: white !important;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3) !important;
         font-weight: 700 !important;
     }
     
@@ -318,7 +314,42 @@ st.markdown("""
     /* But keep chat messages dark for readability */
     .stChatMessage * {
         color: #1e293b !important;
-        text-shadow: none !important;
+    }
+    
+    /* Responsive design for smaller screens */
+    @media (max-width: 768px) {
+        .main h1 {
+            font-size: 1.5rem !important;
+        }
+        
+        .tool-indicator {
+            font-size: 0.85em;
+            padding: 8px 14px;
+        }
+        
+        .stChatMessage {
+            padding: 15px;
+            margin: 10px 0;
+        }
+        
+        [data-testid="column"] {
+            flex-direction: column;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .main h1 {
+            font-size: 1.2rem !important;
+        }
+        
+        .user-info {
+            padding: 10px;
+        }
+        
+        .stButton>button {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.9rem;
+        }
     }
 </style>
 """, unsafe_allow_html=True)
