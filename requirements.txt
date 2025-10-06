@@ -4,8 +4,15 @@ langchain
 langchain-core
 langchain-google-genai
 langchain-community
-ddgs
+duckduckgo-search
 python-dotenv
 requests
+bcrypt
+pydantic
+wikipedia
+newsapi-python
+pyowm
+googlesearch-python
+ddgs
 langgraph-checkpoint-sqlite
 
