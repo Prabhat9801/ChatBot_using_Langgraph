@@ -1,7 +1,6 @@
 import sqlite3
 import bcrypt
 from datetime import datetime
-import json
 
 class Database:
     def __init__(self, db_name="chatbot_app.db"):
@@ -12,11 +11,9 @@ class Database:
         return sqlite3.connect(self.db_name, check_same_thread=False)
     
     def init_database(self):
-        """Initialize database tables"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
-        # Users table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +24,6 @@ class Database:
             )
         ''')
         
-        # Conversations table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS conversations (
                 conversation_id TEXT PRIMARY KEY,
@@ -43,12 +39,10 @@ class Database:
         conn.close()
     
     def create_user(self, username, email, password):
-        """Create a new user"""
         try:
             conn = self.get_connection()
             cursor = conn.cursor()
             
-            # Hash password
             password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             
             cursor.execute(
@@ -66,7 +60,6 @@ class Database:
             return False, str(e)
     
     def authenticate_user(self, username, password):
-        """Authenticate user login"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
@@ -86,7 +79,6 @@ class Database:
         return False, None
     
     def get_user_conversations(self, user_id):
-        """Get all conversations for a user"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
@@ -112,7 +104,6 @@ class Database:
         ]
     
     def create_conversation(self, user_id, conversation_id, title="New Chat"):
-        """Create a new conversation"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
@@ -125,7 +116,6 @@ class Database:
         conn.close()
     
     def update_conversation_title(self, conversation_id, title):
-        """Update conversation title"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
@@ -138,7 +128,6 @@ class Database:
         conn.close()
     
     def update_conversation_timestamp(self, conversation_id):
-        """Update conversation's last updated timestamp"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
@@ -151,7 +140,6 @@ class Database:
         conn.close()
     
     def delete_conversation(self, conversation_id):
-        """Delete a conversation"""
         conn = self.get_connection()
         cursor = conn.cursor()
         
@@ -159,14 +147,3 @@ class Database:
         
         conn.commit()
         conn.close()
-    
-    def get_username(self, user_id):
-        """Get username by user_id"""
-        conn = self.get_connection()
-        cursor = conn.cursor()
-        
-        cursor.execute('SELECT username FROM users WHERE user_id = ?', (user_id,))
-        result = cursor.fetchone()
-        conn.close()
-        
-        return result[0] if result else None
