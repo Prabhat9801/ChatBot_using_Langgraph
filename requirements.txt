@@ -7,4 +7,5 @@ langchain-community
 duckduckgo-search
 python-dotenv
 requests
+langgraph-checkpoint-sqlite
 
