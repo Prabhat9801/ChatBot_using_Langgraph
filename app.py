@@ -13,6 +13,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+
 # Enhanced Custom CSS - Replace the st.markdown CSS section with this
 
 st.markdown("""
@@ -137,6 +138,19 @@ st.markdown("""
         animation: messageSlideIn 0.5s ease-out;
     }
     
+    /* Force all content inside chat messages to be visible */
+    .stChatMessage * {
+        color: #1a1a2e !important;
+    }
+    
+    .stChatMessage .stMarkdown {
+        color: #1a1a2e !important;
+    }
+    
+    .stChatMessage [data-testid="stMarkdownContainer"] {
+        color: #1a1a2e !important;
+    }
+    
     @keyframes messageSlideIn {
         from {
             opacity: 0;
@@ -159,6 +173,45 @@ st.markdown("""
     .stChatMessage div {
         color: #1a1a2e !important;
         line-height: 1.6;
+    }
+    
+    /* Fix code blocks in chat messages */
+    .stChatMessage code {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+    }
+    
+    .stChatMessage pre {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
+        padding: 12px;
+        border-radius: 8px;
+        overflow-x: auto;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .stChatMessage pre code {
+        background: transparent !important;
+        padding: 0;
+    }
+    
+    /* Fix lists in chat messages */
+    .stChatMessage ul,
+    .stChatMessage ol {
+        color: #1a1a2e !important;
+    }
+    
+    .stChatMessage li {
+        color: #1a1a2e !important;
+        margin: 8px 0;
+    }
+    
+    .stChatMessage li code {
+        background: #f1f5f9 !important;
+        color: #1e293b !important;
     }
     
     /* Chat avatars */
@@ -567,6 +620,8 @@ st.markdown("""
     }
 </style>
 """, unsafe_allow_html=True)
+
+
 # Initialize
 auth_manager = AuthManager()
 db = Database()
