@@ -102,21 +102,27 @@ st.markdown("""
         font-weight: 700 !important;
     }
     
-    /* Main content paragraph - force white color */
-    .main > div > div > div > p {
+    /* Main content paragraph - force white color with highest priority */
+    .main > div > div > div > p,
+    .main p,
+    .main span, 
+    .main div {
         color: white !important;
-        font-weight: 700 !important;
+    }
+    
+    /* Target ALL paragraphs in main content area */
+    section[data-testid="stMain"] p {
+        color: white !important;
     }
     
     /* Target the subtitle specifically by style attribute */
-    p[style*="text-align: center"][style*="color: white"] {
+    p[style*="text-align: center"][style*="color: white"],
+    p[style*="text-align: center"] {
         color: white !important;
         font-weight: 700 !important;
-    }
-    
-    /* Main content text */
-    .main p, .main span, .main div {
-        color: white !important;
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
     
     /* Override any Streamlit default text colors in main area */
@@ -126,6 +132,11 @@ st.markdown("""
     
     /* Force markdown paragraphs to be white */
     .stMarkdown p {
+        color: white !important;
+    }
+    
+    /* Nuclear option - force ALL text elements in main to be white */
+    .main * {
         color: white !important;
     }
     
