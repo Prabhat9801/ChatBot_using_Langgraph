@@ -298,12 +298,16 @@ st.markdown("""
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
     }
     
-    /* Specific fix for subtitle and menu hint */
-    .main p[style*="text-align: center"],
-    .main div[style*="text-align: right"] {
+    /* Specific fix for subtitle - match header styling */
+    .main p[style*="text-align: center"] {
         color: white !important;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
-        font-weight: 600 !important;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3) !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Hide the menu hint text */
+    .main div[style*="text-align: right"] {
+        display: none !important;
     }
     
     /* Make sure all text in main area is visible */
