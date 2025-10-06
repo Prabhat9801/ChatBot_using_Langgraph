@@ -1,131 +1,279 @@
-# backend.py
-
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import StateGraph, START
 from typing import TypedDict, Annotated
 from langchain_core.messages import BaseMessage, HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
-from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_core.tools import tool
 from dotenv import load_dotenv
 import sqlite3
 import requests
+import os
+from duckduckgo_search import DDGS
+import wikipedia
 
 load_dotenv()
 
-# -------------------
-# 1. LLM
-# -------------------
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+# LLM
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp")
 
-# -------------------
-# 2. Tools
-# -------------------
-# Tools
-search_tool = DuckDuckGoSearchRun(region="us-en")
+# ============================= TOOLS =============================
 
 @tool
 def calculator(first_num: float, second_num: float, operation: str) -> dict:
     """
-    Perform a basic arithmetic operation on two numbers.
-    Supported operations: add, sub, mul, div
+    Perform arithmetic operations on two numbers.
+    Operations: add, sub, mul, div, pow (power), mod (modulo)
     """
     try:
-        if operation == "add":
-            result = first_num + second_num
-        elif operation == "sub":
-            result = first_num - second_num
-        elif operation == "mul":
-            result = first_num * second_num
-        elif operation == "div":
-            if second_num == 0:
-                return {"error": "Division by zero is not allowed"}
-            result = first_num / second_num
-        else:
+        operations = {
+            "add": lambda a, b: a + b,
+            "sub": lambda a, b: a - b,
+            "mul": lambda a, b: a * b,
+            "div": lambda a, b: a / b if b != 0 else None,
+            "pow": lambda a, b: a ** b,
+            "mod": lambda a, b: a % b if b != 0 else None
+        }
+        
+        if operation not in operations:
             return {"error": f"Unsupported operation '{operation}'"}
         
-        return {"first_num": first_num, "second_num": second_num, "operation": operation, "result": result}
+        result = operations[operation](first_num, second_num)
+        
+        if result is None:
+            return {"error": "Division/modulo by zero is not allowed"}
+        
+        return {
+            "first_num": first_num,
+            "second_num": second_num,
+            "operation": operation,
+            "result": result
+        }
     except Exception as e:
         return {"error": str(e)}
 
 
+@tool
+def web_search(query: str, max_results: int = 5) -> dict:
+    """
+    Search the web using DuckDuckGo for current information, news, and general queries.
+    Returns recent and relevant results.
+    """
+    try:
+        ddgs = DDGS()
+        results = list(ddgs.text(query, max_results=max_results))
+        
+        formatted_results = []
+        for r in results:
+            formatted_results.append({
+                "title": r.get("title", ""),
+                "url": r.get("href", ""),
+                "snippet": r.get("body", "")
+            })
+        
+        return {
+            "query": query,
+            "results": formatted_results,
+            "count": len(formatted_results)
+        }
+    except Exception as e:
+        return {"error": f"Search failed: {str(e)}"}
 
 
 @tool
 def get_stock_price(symbol: str) -> dict:
     """
-    Fetch latest stock price for a given symbol (e.g. 'AAPL', 'TSLA') 
-    using Alpha Vantage with API key in the URL.
+    Fetch latest stock price for a given symbol (e.g. 'AAPL', 'TSLA', 'GOOGL')
+    using Alpha Vantage API. Returns current price, change, and volume.
     """
+    try:
+        api_key = os.getenv("ALPHA_VANTAGE_API_KEY", "IKL4A9NNABD44FKE")
+        url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey={api_key}"
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        
+        if "Global Quote" in data and data["Global Quote"]:
+            quote = data["Global Quote"]
+            return {
+                "symbol": symbol,
+                "price": quote.get("05. price", "N/A"),
+                "change": quote.get("09. change", "N/A"),
+                "change_percent": quote.get("10. change percent", "N/A"),
+                "volume": quote.get("06. volume", "N/A"),
+                "latest_trading_day": quote.get("07. latest trading day", "N/A")
+            }
+        else:
+            return {"error": "Stock data not found. Check symbol or API limit reached."}
+    except Exception as e:
+        return {"error": f"Failed to fetch stock data: {str(e)}"}
 
-    
-    url = f"https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol={symbol}&apikey=IKL4A9NNABD44FKE"
-    r = requests.get(url)
-    return r.json()
+
+@tool
+def wikipedia_search(query: str) -> dict:
+    """
+    Search Wikipedia for factual information, definitions, and summaries.
+    Great for historical facts, biographies, and general knowledge.
+    """
+    try:
+        wikipedia.set_lang("en")
+        summary = wikipedia.summary(query, sentences=3, auto_suggest=True)
+        page = wikipedia.page(query, auto_suggest=True)
+        
+        return {
+            "title": page.title,
+            "summary": summary,
+            "url": page.url
+        }
+    except wikipedia.exceptions.DisambiguationError as e:
+        return {
+            "error": "Multiple results found",
+            "suggestions": e.options[:5]
+        }
+    except wikipedia.exceptions.PageError:
+        return {"error": f"No Wikipedia page found for '{query}'"}
+    except Exception as e:
+        return {"error": f"Wikipedia search failed: {str(e)}"}
 
 
+@tool
+def news_search(topic: str, max_results: int = 5) -> dict:
+    """
+    Get latest news articles about a specific topic using DuckDuckGo News.
+    Perfect for current events, breaking news, and recent developments.
+    """
+    try:
+        ddgs = DDGS()
+        results = list(ddgs.news(topic, max_results=max_results))
+        
+        articles = []
+        for article in results:
+            articles.append({
+                "title": article.get("title", ""),
+                "url": article.get("url", ""),
+                "source": article.get("source", ""),
+                "date": article.get("date", ""),
+                "snippet": article.get("body", "")
+            })
+        
+        return {
+            "topic": topic,
+            "articles": articles,
+            "count": len(articles)
+        }
+    except Exception as e:
+        return {"error": f"News search failed: {str(e)}"}
 
-tools = [search_tool, get_stock_price, calculator]
+
+@tool
+def currency_converter(amount: float, from_currency: str, to_currency: str) -> dict:
+    """
+    Convert currency from one type to another using live exchange rates.
+    Example: amount=100, from_currency='USD', to_currency='EUR'
+    """
+    try:
+        url = f"https://api.exchangerate-api.com/v4/latest/{from_currency.upper()}"
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        
+        if "rates" in data:
+            to_curr = to_currency.upper()
+            if to_curr in data["rates"]:
+                rate = data["rates"][to_curr]
+                converted = amount * rate
+                return {
+                    "from": from_currency.upper(),
+                    "to": to_currency.upper(),
+                    "amount": amount,
+                    "converted_amount": round(converted, 2),
+                    "exchange_rate": rate
+                }
+            else:
+                return {"error": f"Currency '{to_currency}' not found"}
+        else:
+            return {"error": "Failed to fetch exchange rates"}
+    except Exception as e:
+        return {"error": f"Currency conversion failed: {str(e)}"}
+
+
+# Bind all tools
+tools = [
+    calculator,
+    web_search,
+    get_stock_price,
+    wikipedia_search,
+    news_search,
+    currency_converter
+]
+
 llm_with_tools = llm.bind_tools(tools)
 
-# -------------------
-# 3. State
-# -------------------
+# ============================= STATE =============================
+
 class ChatState(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
 
-# -------------------
-# 4. Nodes
-# -------------------
-# def chat_node(state: ChatState):
-#     """LLM node that understand the human message or question then decide to answer or request a tool call."""
-#     messages = state["messages"]
-#     response = llm_with_tools.invoke(messages)
-#     return {"messages": [response]}
+# ============================= NODES =============================
 
 def chat_node(state: ChatState):
-    """LLM node that may answer freely as well as by request a tool call."""
+    """Main chat node with tool support"""
     messages = state["messages"]
-
-    # Use the tool-aware LLM
     response = llm_with_tools.invoke(messages)
-
-    # If response is just a refusal (no tool, no content), fallback to normal LLM
+    
+    # Fallback to normal LLM if refusal
     if not response.content or "I cannot" in response.content:
         response = llm.invoke(messages)
-
+    
     return {"messages": [response]}
 
 
 tool_node = ToolNode(tools)
 
-# -------------------
-# 5. Checkpointer
-# -------------------
-conn = sqlite3.connect(database="chatbot.db", check_same_thread=False)
-checkpointer = SqliteSaver(conn=conn)
+# ============================= CHECKPOINTER =============================
 
-# -------------------
-# 6. Graph
-# -------------------
-graph = StateGraph(ChatState)
-graph.add_node("chat_node", chat_node)
-graph.add_node("tools", tool_node)
+# User-specific checkpointer will be created per user
+def get_user_checkpointer(user_id):
+    """Get checkpointer for specific user"""
+    db_path = f"user_{user_id}_chats.db"
+    conn = sqlite3.connect(database=db_path, check_same_thread=False)
+    return SqliteSaver(conn=conn)
 
-graph.add_edge(START, "chat_node")
+# ============================= GRAPH =============================
 
-graph.add_conditional_edges("chat_node",tools_condition)
-graph.add_edge('tools', 'chat_node')
+def create_chatbot(user_id):
+    """Create chatbot instance for specific user"""
+    checkpointer = get_user_checkpointer(user_id)
+    
+    graph = StateGraph(ChatState)
+    graph.add_node("chat_node", chat_node)
+    graph.add_node("tools", tool_node)
+    
+    graph.add_edge(START, "chat_node")
+    graph.add_conditional_edges("chat_node", tools_condition)
+    graph.add_edge('tools', 'chat_node')
+    
+    return graph.compile(checkpointer=checkpointer)
 
-chatbot = graph.compile(checkpointer=checkpointer)
+# ============================= HELPERS =============================
 
-# -------------------
-# 7. Helper
-# -------------------
-def retrieve_all_threads():
+def retrieve_user_threads(user_id):
+    """Retrieve all conversation threads for a specific user"""
+    checkpointer = get_user_checkpointer(user_id)
     all_threads = set()
-    for checkpoint in checkpointer.list(None):
-        all_threads.add(checkpoint.config["configurable"]["thread_id"])
+    
+    try:
+        for checkpoint in checkpointer.list(None):
+            thread_id = checkpoint.config["configurable"]["thread_id"]
+            all_threads.add(thread_id)
+    except:
+        pass
+    
     return list(all_threads)
+
+
+def generate_conversation_title(first_message: str) -> str:
+    """Generate a short title from the first message"""
+    title = first_message[:50]
+    if len(first_message) > 50:
+        title += "..."
+    return title
