@@ -5,7 +5,6 @@ class AuthManager:
     def __init__(self):
         self.db = Database()
         
-        # Initialize session state
         if 'authenticated' not in st.session_state:
             st.session_state.authenticated = False
         if 'user_id' not in st.session_state:
@@ -14,9 +13,8 @@ class AuthManager:
             st.session_state.username = None
     
     def login_page(self):
-        """Display login/signup page"""
         st.markdown("""
-        
+        <style>
             .auth-container {
                 max-width: 400px;
                 margin: 0 auto;
@@ -33,13 +31,13 @@ class AuthManager:
                 margin-bottom: 30px;
                 text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             }
-        
+        </style>
         """, unsafe_allow_html=True)
         
         col1, col2, col3 = st.columns([1, 2, 1])
         
         with col2:
-            st.markdown('🤖 LangGraph AI', unsafe_allow_html=True)
+            st.markdown('<h1 class="auth-title">🤖 LangGraph AI</h1>', unsafe_allow_html=True)
             
             tab1, tab2 = st.tabs(["🔐 Login", "📝 Sign Up"])
             
@@ -50,7 +48,6 @@ class AuthManager:
                 self.signup_form()
     
     def login_form(self):
-        """Login form"""
         with st.form("login_form"):
             username = st.text_input("Username", placeholder="Enter your username")
             password = st.text_input("Password", type="password", placeholder="Enter your password")
@@ -71,7 +68,6 @@ class AuthManager:
                     st.warning("⚠️ Please fill in all fields")
     
     def signup_form(self):
-        """Signup form"""
         with st.form("signup_form"):
             username = st.text_input("Username", placeholder="Choose a username")
             email = st.text_input("Email", placeholder="Enter your email")
@@ -96,7 +92,6 @@ class AuthManager:
                     st.warning("⚠️ Please fill in all fields")
     
     def logout(self):
-        """Logout user"""
         st.session_state.authenticated = False
         st.session_state.user_id = None
         st.session_state.username = None
@@ -104,5 +99,4 @@ class AuthManager:
         st.rerun()
     
     def is_authenticated(self):
-        """Check if user is authenticated"""
         return st.session_state.get('authenticated', False)
