@@ -10,20 +10,37 @@ st.set_page_config(
     page_title="LangGraph AI - Multi-Tool Chatbot",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# Custom CSS
+# Enhanced Custom CSS with slide-in sidebar
 st.markdown("""
 <style>
+    /* Main gradient background */
     .main {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
     
+    /* Sidebar styling */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+        box-shadow: 2px 0 10px rgba(0,0,0,0.3);
     }
     
+    [data-testid="stSidebar"][aria-expanded="true"] {
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            transform: translateX(-100%);
+        }
+        to {
+            transform: translateX(0);
+        }
+    }
+    
+    /* Chat message styling */
     .stChatMessage {
         background-color: rgba(255, 255, 255, 0.95);
         border-radius: 15px;
@@ -32,6 +49,7 @@ st.markdown("""
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     
+    /* Button styling */
     .stButton>button {
         width: 100%;
         border-radius: 10px;
@@ -47,6 +65,7 @@ st.markdown("""
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
     }
     
+    /* Headers */
     h1, h2, h3 {
         color: white !important;
     }
@@ -58,14 +77,17 @@ st.markdown("""
         color: white !important;
     }
     
+    /* User info card */
     .user-info {
         background: rgba(255, 255, 255, 0.1);
         padding: 15px;
         border-radius: 10px;
         margin: 10px 0;
         text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
     
+    /* Sidebar buttons */
     [data-testid="stSidebar"] .stButton>button {
         background: rgba(255, 255, 255, 0.1);
         color: white;
@@ -74,6 +96,119 @@ st.markdown("""
     
     [data-testid="stSidebar"] .stButton>button:hover {
         background: rgba(255, 255, 255, 0.2);
+        transform: translateX(5px);
+    }
+    
+    /* Menu button styling */
+    .menu-button {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 10px;
+        padding: 10px 15px;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .menu-button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: scale(1.1);
+    }
+    
+    /* Tool indicator badge */
+    .tool-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 600;
+        margin: 10px 0;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.8;
+        }
+    }
+    
+    /* Status container */
+    .stStatus {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Conversation item with hover effect */
+    .conversation-btn {
+        transition: all 0.3s ease;
+    }
+    
+    .conversation-btn:hover {
+        transform: translateX(5px);
+    }
+    
+    /* Delete button */
+    .delete-btn {
+        background: rgba(239, 68, 68, 0.2) !important;
+        border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    }
+    
+    .delete-btn:hover {
+        background: rgba(239, 68, 68, 0.4) !important;
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+    
+    /* Info box */
+    .info-box {
+        background: rgba(59, 130, 246, 0.2);
+        border-left: 4px solid #3b82f6;
+        padding: 12px;
+        border-radius: 8px;
+        margin: 10px 0;
+        color: white;
+    }
+    
+    /* Success box */
+    .success-box {
+        background: rgba(34, 197, 94, 0.2);
+        border-left: 4px solid #22c55e;
+        padding: 12px;
+        border-radius: 8px;
+        margin: 10px 0;
+        color: white;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -108,6 +243,9 @@ def init_session_state():
     
     if "show_about" not in st.session_state:
         st.session_state.show_about = False
+    
+    if "current_tool" not in st.session_state:
+        st.session_state.current_tool = None
 
 init_session_state()
 
@@ -116,11 +254,13 @@ def reset_chat():
     thread_id = str(uuid.uuid4())
     st.session_state.thread_id = thread_id
     st.session_state.message_history = []
+    st.session_state.current_tool = None
     db.create_conversation(st.session_state.user_id, thread_id, "New Chat")
     st.session_state.conversations = db.get_user_conversations(st.session_state.user_id)
 
 def load_conversation(conversation_id):
     st.session_state.thread_id = conversation_id
+    st.session_state.current_tool = None
     state = st.session_state.chatbot.get_state(
         config={"configurable": {"thread_id": conversation_id}}
     )
@@ -140,7 +280,7 @@ def delete_conversation(conversation_id):
         reset_chat()
     st.session_state.conversations = db.get_user_conversations(st.session_state.user_id)
 
-# Sidebar
+# Sidebar with slide animation
 with st.sidebar:
     st.markdown("# 🤖 LangGraph AI")
     st.markdown("### Multi-Tool Assistant")
@@ -169,11 +309,11 @@ with st.sidebar:
             **Developer:** Prabhat Singh
             
             #### 🌟 Features:
-            - 🔐 Secure Authentication
-            - 💬 Persistent Conversations
-            - 🛠️ 6 Powerful Tools:
+            - 🔐 **Secure Authentication**
+            - 💬 **Persistent Conversations**
+            - 🛠️ **6 Powerful Tools**:
               - 🧮 Advanced Calculator
-              - 🔍 Web Search
+              - 🔍 Web Search (DuckDuckGo)
               - 📈 Stock Price Tracker
               - 📚 Wikipedia Search
               - 📰 News Search
@@ -202,20 +342,22 @@ with st.sidebar:
             col1, col2 = st.columns([4, 1])
             
             with col1:
+                # Add conversation-btn class for hover effect
+                button_key = f"load_{conv['id']}"
                 if st.button(
                     f"💭 {conv['title'][:30]}",
-                    key=f"load_{conv['id']}",
+                    key=button_key,
                     use_container_width=True
                 ):
                     load_conversation(conv['id'])
                     st.rerun()
             
             with col2:
-                if st.button("🗑️", key=f"del_{conv['id']}"):
+                if st.button("🗑️", key=f"del_{conv['id']}", help="Delete conversation"):
                     delete_conversation(conv['id'])
                     st.rerun()
     else:
-        st.info("No conversations yet")
+        st.markdown('<div class="info-box">📝 No conversations yet. Start chatting!</div>', unsafe_allow_html=True)
     
     st.markdown("---")
     st.markdown("""
@@ -225,13 +367,44 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-# Main UI
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
+# Main UI - Header with menu hint
+col1, col2 = st.columns([6, 1])
+with col1:
     st.markdown("# 🤖 LangGraph AI Chatbot")
-    st.markdown("<p style='text-align: center; color: white;'>Your Intelligent Multi-Tool Assistant</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; color: white; font-size: 1.1em;'>Your Intelligent Multi-Tool Assistant</p>", unsafe_allow_html=True)
+with col2:
+    st.markdown('<div style="text-align: right; color: white; font-size: 0.9em; padding-top: 20px;">👈 Open menu for conversations</div>', unsafe_allow_html=True)
 
 st.markdown("---")
+
+# Show current tool indicator if active
+if st.session_state.current_tool:
+    tool_emojis = {
+        "calculator": "🧮",
+        "web_search": "🔍",
+        "get_stock_price": "📈",
+        "wikipedia_search": "📚",
+        "news_search": "📰",
+        "currency_converter": "💱"
+    }
+    tool_names = {
+        "calculator": "Calculator",
+        "web_search": "Web Search",
+        "get_stock_price": "Stock Price",
+        "wikipedia_search": "Wikipedia",
+        "news_search": "News Search",
+        "currency_converter": "Currency Converter"
+    }
+    emoji = tool_emojis.get(st.session_state.current_tool, "🔧")
+    name = tool_names.get(st.session_state.current_tool, st.session_state.current_tool)
+    
+    st.markdown(f"""
+    <div class="tool-indicator">
+        <span>{emoji}</span>
+        <span>Using: {name}</span>
+        <span>⚡</span>
+    </div>
+    """, unsafe_allow_html=True)
 
 # Chat history
 for message in st.session_state.message_history:
@@ -242,6 +415,10 @@ for message in st.session_state.message_history:
 user_input = st.chat_input("💭 Ask me anything...")
 
 if user_input:
+    # Reset current tool
+    st.session_state.current_tool = None
+    
+    # Update title if first message
     if len(st.session_state.message_history) == 0:
         title = generate_conversation_title(user_input)
         db.update_conversation_title(st.session_state.thread_id, title)
@@ -261,6 +438,7 @@ if user_input:
     
     with st.chat_message("assistant", avatar="🤖"):
         status_holder = {"box": None}
+        tool_used = {"name": None}
         
         def ai_stream():
             for message_chunk, metadata in st.session_state.chatbot.stream(
@@ -270,6 +448,9 @@ if user_input:
             ):
                 if isinstance(message_chunk, ToolMessage):
                     tool_name = getattr(message_chunk, "name", "tool")
+                    tool_used["name"] = tool_name
+                    st.session_state.current_tool = tool_name
+                    
                     tool_emojis = {
                         "calculator": "🧮",
                         "web_search": "🔍",
@@ -278,16 +459,30 @@ if user_input:
                         "news_search": "📰",
                         "currency_converter": "💱"
                     }
+                    
+                    tool_display_names = {
+                        "calculator": "Calculator",
+                        "web_search": "Web Search",
+                        "get_stock_price": "Stock Price Lookup",
+                        "wikipedia_search": "Wikipedia Search",
+                        "news_search": "News Search",
+                        "currency_converter": "Currency Converter"
+                    }
+                    
                     emoji = tool_emojis.get(tool_name, "🔧")
+                    display_name = tool_display_names.get(tool_name, tool_name)
                     
                     if status_holder["box"] is None:
                         status_holder["box"] = st.status(
-                            f"{emoji} Using {tool_name}...",
-                            expanded=True
+                            f"{emoji} Using {display_name}...",
+                            expanded=True,
+                            state="running"
                         )
+                        with status_holder["box"]:
+                            st.write(f"🔄 Processing with **{display_name}**")
                     else:
                         status_holder["box"].update(
-                            label=f"{emoji} Using {tool_name}...",
+                            label=f"{emoji} Using {display_name}...",
                             state="running",
                             expanded=True
                         )
@@ -297,13 +492,32 @@ if user_input:
         
         ai_message = st.write_stream(ai_stream())
         
+        # Show completion status
         if status_holder["box"] is not None:
+            tool_name = tool_used["name"]
+            tool_emojis = {
+                "calculator": "🧮",
+                "web_search": "🔍",
+                "get_stock_price": "📈",
+                "wikipedia_search": "📚",
+                "news_search": "📰",
+                "currency_converter": "💱"
+            }
+            emoji = tool_emojis.get(tool_name, "🔧")
+            
             status_holder["box"].update(
-                label="✅ Complete",
+                label=f"✅ {emoji} Completed",
                 state="complete",
                 expanded=False
             )
+            
+            # Show success message
+            st.markdown(f'<div class="success-box">✅ Successfully used {tool_name}</div>', unsafe_allow_html=True)
     
+    # Save assistant message
     st.session_state.message_history.append(
         {"role": "assistant", "content": ai_message}
     )
+    
+    # Clear current tool after response
+    st.session_state.current_tool = None
