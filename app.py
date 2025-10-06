@@ -102,8 +102,30 @@ st.markdown("""
         font-weight: 700 !important;
     }
     
+    /* Main content paragraph - force white color */
+    .main > div > div > div > p {
+        color: white !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Target the subtitle specifically by style attribute */
+    p[style*="text-align: center"][style*="color: white"] {
+        color: white !important;
+        font-weight: 700 !important;
+    }
+    
     /* Main content text */
     .main p, .main span, .main div {
+        color: white !important;
+    }
+    
+    /* Override any Streamlit default text colors in main area */
+    .element-container p {
+        color: white !important;
+    }
+    
+    /* Force markdown paragraphs to be white */
+    .stMarkdown p {
         color: white !important;
     }
     
@@ -299,6 +321,12 @@ st.markdown("""
     .main p[style*="text-align: center"] {
         color: white !important;
         font-weight: 700 !important;
+        font-size: 1.1em !important;
+    }
+    
+    /* Additional targeting for centered paragraphs */
+    .main [data-testid="column"] p {
+        color: white !important;
     }
     
     /* Hide the menu hint text */
