@@ -288,6 +288,33 @@ st.markdown("""
     [data-testid="column"] div,
     [data-testid="column"] span {
         color: white !important;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        font-weight: 500;
+    }
+    
+    /* Force inline styles to be white with shadow */
+    [style*="color: white"] {
+        color: white !important;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+    }
+    
+    /* Specific fix for subtitle and menu hint */
+    .main p[style*="text-align: center"],
+    .main div[style*="text-align: right"] {
+        color: white !important;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5) !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Make sure all text in main area is visible */
+    .main * {
+        color: white !important;
+    }
+    
+    /* But keep chat messages dark for readability */
+    .stChatMessage * {
+        color: #1e293b !important;
+        text-shadow: none !important;
     }
 </style>
 """, unsafe_allow_html=True)
