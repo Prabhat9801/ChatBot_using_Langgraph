@@ -13,309 +13,229 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Enhanced Custom CSS with better light/dark mode support
+# Enhanced Custom CSS - Replace the st.markdown CSS section with this
+
 st.markdown("""
 <style>
-    /* Main gradient background - works in both modes */
-    .main {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%) !important;
-        min-height: 100vh;
+    /* Import Google Fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
+    /* Global Font */
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     
-    /* Ensure main content area has proper styling */
+    /* ==================== MAIN BACKGROUND ==================== */
+    .main {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%) !important;
+        background-size: 400% 400% !important;
+        animation: gradientShift 15s ease infinite !important;
+        min-height: 100vh;
+        position: relative;
+    }
+    
+    @keyframes gradientShift {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    
+    /* Animated background overlay */
+    .main::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 1;
+    }
+    
     .block-container {
         background: transparent !important;
+        position: relative;
+        z-index: 2;
+        max-width: 1200px;
+        padding: 2rem 1rem !important;
     }
     
-    /* Sidebar styling */
+    /* ==================== SIDEBAR ==================== */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1e293b 0%, #334155 100%) !important;
-        box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%) !important;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+        border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    [data-testid="stSidebar"]::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: 
+            linear-gradient(45deg, transparent 30%, rgba(102, 126, 234, 0.05) 50%, transparent 70%);
+        animation: sidebarShine 3s ease-in-out infinite;
+        pointer-events: none;
+    }
+    
+    @keyframes sidebarShine {
+        0%, 100% { opacity: 0; }
+        50% { opacity: 1; }
     }
     
     [data-testid="stSidebar"][aria-expanded="true"] {
-        animation: slideIn 0.3s ease-out;
+        animation: slideInSmooth 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
-    @keyframes slideIn {
+    @keyframes slideInSmooth {
         from {
             transform: translateX(-100%);
+            opacity: 0;
         }
         to {
             transform: translateX(0);
+            opacity: 1;
         }
     }
     
-    /* Force sidebar text to be white */
+    /* Sidebar text colors */
     [data-testid="stSidebar"] * {
         color: white !important;
     }
     
-    [data-testid="stSidebar"] .stMarkdown {
-        color: white !important;
-    }
-    
-    /* Chat message styling - improved contrast */
+    /* ==================== CHAT MESSAGES ==================== */
     .stChatMessage {
-        background-color: rgba(255, 255, 255, 0.98) !important;
-        border-radius: 15px;
-        padding: 20px;
-        margin: 15px 0;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        backdrop-filter: blur(10px);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%) !important;
+        border-radius: 20px;
+        padding: 24px;
+        margin: 20px 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: messageSlideIn 0.5s ease-out;
     }
     
-    /* Force chat message text to be dark for readability */
+    @keyframes messageSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .stChatMessage:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Chat message text */
     .stChatMessage p, 
     .stChatMessage span,
     .stChatMessage div {
-        color: #1e293b !important;
+        color: #1a1a2e !important;
+        line-height: 1.6;
     }
     
-    /* Avatar styling */
-    .stChatMessage [data-testid="chatAvatarIcon-user"],
+    /* Chat avatars */
+    .stChatMessage [data-testid="chatAvatarIcon-user"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+    
     .stChatMessage [data-testid="chatAvatarIcon-assistant"] {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
     }
     
-    /* Button styling */
+    /* ==================== BUTTONS ==================== */
     .stButton>button {
         width: 100%;
-        border-radius: 10px;
+        border-radius: 12px;
         font-weight: 600;
-        transition: all 0.3s ease;
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%) !important;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         color: white !important;
         border: none;
-        padding: 0.5rem 1rem;
+        padding: 0.65rem 1.2rem;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stButton>button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .stButton>button:hover::before {
+        width: 300px;
+        height: 300px;
     }
     
     .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%) !important;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+        background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%) !important;
     }
     
-    /* Main headers - clean white without shadow */
-    .main h1, .main h2, .main h3 {
+    .stButton>button:active {
+        transform: translateY(-1px);
+    }
+    
+    /* ==================== HEADERS ==================== */
+    .main h1 {
+        color: white !important;
+        font-weight: 800 !important;
+        text-align: center;
+        font-size: 3rem !important;
+        letter-spacing: -0.5px;
+        text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        margin-bottom: 0.5rem !important;
+        animation: fadeInDown 0.8s ease-out;
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .main h2, .main h3 {
         color: white !important;
         font-weight: 700 !important;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
     }
     
-    /* Main content paragraph - force white color with highest priority */
-    .main > div > div > div > p,
+    /* All main content text */
     .main p,
     .main span, 
-    .main div {
-        color: white !important;
-    }
-    
-    /* Target ALL paragraphs in main content area */
-    section[data-testid="stMain"] p {
-        color: white !important;
-    }
-    
-    /* Target the subtitle specifically by style attribute */
-    p[style*="text-align: center"][style*="color: white"],
-    p[style*="text-align: center"] {
-        color: white !important;
-        font-weight: 700 !important;
-        display: block !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-    }
-    
-    /* Override any Streamlit default text colors in main area */
-    .element-container p {
-        color: white !important;
-    }
-    
-    /* Force markdown paragraphs to be white */
-    .stMarkdown p {
-        color: white !important;
-    }
-    
-    /* Nuclear option - force ALL text elements in main to be white */
-    .main * {
-        color: white !important;
-    }
-    
-    /* Sidebar headers */
-    [data-testid="stSidebar"] h1, 
-    [data-testid="stSidebar"] h2, 
-    [data-testid="stSidebar"] h3,
-    [data-testid="stSidebar"] h4,
-    [data-testid="stSidebar"] p {
-        color: white !important;
-    }
-    
-    /* User info card */
-    .user-info {
-        background: rgba(255, 255, 255, 0.15) !important;
-        padding: 15px;
-        border-radius: 10px;
-        margin: 10px 0;
-        text-align: center;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        backdrop-filter: blur(10px);
-    }
-    
-    .user-info h4, .user-info p {
-        color: white !important;
-    }
-    
-    /* Sidebar buttons */
-    [data-testid="stSidebar"] .stButton>button {
-        background: rgba(255, 255, 255, 0.15) !important;
-        color: white !important;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    [data-testid="stSidebar"] .stButton>button:hover {
-        background: rgba(255, 255, 255, 0.25) !important;
-        transform: translateX(5px);
-    }
-    
-    /* Tool indicator badge */
-    .tool-indicator {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
-        color: white;
-        padding: 10px 20px;
-        border-radius: 25px;
-        font-size: 1em;
-        font-weight: 600;
-        margin: 10px 0;
-        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 1;
-            transform: scale(1);
-        }
-        50% {
-            opacity: 0.9;
-            transform: scale(1.02);
-        }
-    }
-    
-    /* Status container */
-    .stStatus {
-        background: rgba(255, 255, 255, 0.95) !important;
-        border-radius: 10px;
-        border: 1px solid rgba(99, 102, 241, 0.3);
-        color: #1e293b !important;
-    }
-    
-    .stStatus * {
-        color: #1e293b !important;
-    }
-    
-    /* Scrollbar styling */
-    ::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 5px;
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 5px;
-    }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.5);
-    }
-    
-    /* Info box */
-    .info-box {
-        background: rgba(59, 130, 246, 0.25) !important;
-        border-left: 4px solid #3b82f6;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
-        color: white !important;
-        backdrop-filter: blur(10px);
-    }
-    
-    /* Success box */
-    .success-box {
-        background: rgba(34, 197, 94, 0.25) !important;
-        border-left: 4px solid #22c55e;
-        padding: 15px;
-        border-radius: 8px;
-        margin: 10px 0;
-        color: white !important;
-        backdrop-filter: blur(10px);
-    }
-    
-    /* Chat input styling */
-    .stChatInputContainer {
-        background: rgba(255, 255, 255, 0.95) !important;
-        border-radius: 15px;
-        padding: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-    
-    .stChatInput textarea {
-        background: white !important;
-        color: #1e293b !important;
-        border: 2px solid rgba(99, 102, 241, 0.3) !important;
-        border-radius: 10px !important;
-    }
-    
-    .stChatInput textarea:focus {
-        border-color: #6366f1 !important;
-        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2) !important;
-    }
-    
-    /* Expander styling */
-    .streamlit-expanderHeader {
-        background: rgba(255, 255, 255, 0.15) !important;
-        color: white !important;
-        border-radius: 8px;
-    }
-    
-    .streamlit-expanderContent {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border-radius: 0 0 8px 8px;
-        color: white !important;
-    }
-    
-    /* Caption styling */
-    .stCaption {
-        color: rgba(255, 255, 255, 0.8) !important;
-    }
-    
-    /* Divider */
-    hr {
-        border-color: rgba(255, 255, 255, 0.3) !important;
-    }
-    
-    /* Remove default Streamlit padding */
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-    }
-    
-    /* Ensure all markdown in main area is white */
-    .main .stMarkdown {
-        color: white !important;
-    }
-    
-    /* Column text */
-    [data-testid="column"] {
-        color: white !important;
-    }
-    
+    .main div,
+    section[data-testid="stMain"] p,
+    .element-container p,
+    .stMarkdown p,
     [data-testid="column"] p,
     [data-testid="column"] div,
     [data-testid="column"] span {
@@ -323,76 +243,305 @@ st.markdown("""
         font-weight: 500;
     }
     
-    /* Force inline styles to be white */
-    [style*="color: white"] {
-        color: white !important;
-    }
-    
-    /* Specific fix for subtitle - match header styling exactly */
+    /* Subtitle styling */
     .main p[style*="text-align: center"] {
-        color: white !important;
-        font-weight: 700 !important;
-        font-size: 1.1em !important;
+        color: rgba(255, 255, 255, 0.95) !important;
+        font-weight: 600 !important;
+        font-size: 1.15em !important;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        animation: fadeIn 1s ease-out 0.3s both;
     }
     
-    /* Additional targeting for centered paragraphs */
-    .main [data-testid="column"] p {
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    /* ==================== USER INFO CARD ==================== */
+    .user-info {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
+        padding: 20px;
+        border-radius: 16px;
+        margin: 15px 0;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .user-info:hover {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.15) 100%) !important;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+    
+    .user-info h4, .user-info p {
         color: white !important;
     }
     
-    /* Hide the menu hint text */
+    /* ==================== SIDEBAR BUTTONS ==================== */
+    [data-testid="stSidebar"] .stButton>button {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+    
+    [data-testid="stSidebar"] .stButton>button:hover {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
+        transform: translateX(5px);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+    
+    /* ==================== TOOL INDICATOR ==================== */
+    .tool-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 14px 28px;
+        border-radius: 50px;
+        font-size: 1.05em;
+        font-weight: 700;
+        margin: 15px 0;
+        box-shadow: 0 8px 30px rgba(245, 87, 108, 0.4);
+        animation: toolPulse 2s ease-in-out infinite;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    @keyframes toolPulse {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 8px 30px rgba(245, 87, 108, 0.4);
+        }
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px rgba(245, 87, 108, 0.6);
+        }
+    }
+    
+    /* ==================== STATUS CONTAINER ==================== */
+    .stStatus {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%) !important;
+        border-radius: 16px;
+        border: 2px solid rgba(102, 126, 234, 0.3);
+        color: #1a1a2e !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+    }
+    
+    .stStatus * {
+        color: #1a1a2e !important;
+    }
+    
+    /* ==================== INFO & SUCCESS BOXES ==================== */
+    .info-box {
+        background: linear-gradient(135deg, rgba(79, 172, 254, 0.3) 0%, rgba(0, 242, 254, 0.2) 100%) !important;
+        border-left: 5px solid #4facfe;
+        padding: 18px 20px;
+        border-radius: 12px;
+        margin: 15px 0;
+        color: white !important;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.2);
+        font-weight: 500;
+    }
+    
+    .success-box {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.3) 0%, rgba(16, 185, 129, 0.2) 100%) !important;
+        border-left: 5px solid #22c55e;
+        padding: 18px 20px;
+        border-radius: 12px;
+        margin: 15px 0;
+        color: white !important;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
+        font-weight: 500;
+        animation: successSlide 0.5s ease-out;
+    }
+    
+    @keyframes successSlide {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* ==================== CHAT INPUT ==================== */
+    .stChatInputContainer {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%) !important;
+        border-radius: 20px;
+        padding: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        border: 2px solid rgba(102, 126, 234, 0.2);
+        backdrop-filter: blur(20px);
+    }
+    
+    .stChatInput textarea {
+        background: white !important;
+        color: #1a1a2e !important;
+        border: 2px solid rgba(102, 126, 234, 0.2) !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
+        font-size: 1rem !important;
+        transition: all 0.3s ease;
+    }
+    
+    .stChatInput textarea:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+        outline: none !important;
+    }
+    
+    /* ==================== EXPANDER ==================== */
+    .streamlit-expanderHeader {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.15) 100%) !important;
+        color: white !important;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .streamlit-expanderHeader:hover {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
+        transform: translateX(5px);
+    }
+    
+    .streamlit-expanderContent {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
+        border-radius: 0 0 12px 12px;
+        color: white !important;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-top: none;
+        backdrop-filter: blur(10px);
+    }
+    
+    /* ==================== SCROLLBAR ==================== */
+    ::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        margin: 5px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.6) 0%, rgba(118, 75, 162, 0.6) 100%);
+        border-radius: 10px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.8) 0%, rgba(118, 75, 162, 0.8) 100%);
+    }
+    
+    /* ==================== DIVIDER ==================== */
+    hr {
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        margin: 2rem 0;
+    }
+    
+    /* ==================== CAPTIONS ==================== */
+    .stCaption {
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-weight: 500;
+    }
+    
+    /* ==================== HIDE ELEMENTS ==================== */
     .main div[style*="text-align: right"] {
         display: none !important;
     }
     
-    /* Make sure all text in main area is visible */
-    .main * {
-        color: white !important;
-    }
-    
-    /* But keep chat messages dark for readability */
-    .stChatMessage * {
-        color: #1e293b !important;
-    }
-    
-    /* Responsive design for smaller screens */
+    /* ==================== RESPONSIVE DESIGN ==================== */
     @media (max-width: 768px) {
         .main h1 {
+            font-size: 2rem !important;
+        }
+        
+        .tool-indicator {
+            font-size: 0.9em;
+            padding: 10px 18px;
+        }
+        
+        .stChatMessage {
+            padding: 18px;
+            margin: 15px 0;
+        }
+        
+        .block-container {
+            padding: 1rem 0.5rem !important;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .main h1 {
             font-size: 1.5rem !important;
+        }
+        
+        .user-info {
+            padding: 15px;
+        }
+        
+        .stButton>button {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
         }
         
         .tool-indicator {
             font-size: 0.85em;
             padding: 8px 14px;
         }
-        
-        .stChatMessage {
-            padding: 15px;
-            margin: 10px 0;
+    }
+    
+    /* ==================== LOADING ANIMATIONS ==================== */
+    @keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
         }
-        
-        [data-testid="column"] {
-            flex-direction: column;
+        100% {
+            background-position: 1000px 0;
         }
     }
     
-    @media (max-width: 480px) {
-        .main h1 {
-            font-size: 1.2rem !important;
-        }
-        
-        .user-info {
-            padding: 10px;
-        }
-        
-        .stButton>button {
-            padding: 0.4rem 0.8rem;
-            font-size: 0.9rem;
-        }
+    /* ==================== HOVER EFFECTS ==================== */
+    .stChatMessage:hover::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.05), transparent);
+        pointer-events: none;
+        border-radius: 20px;
+    }
+    
+    /* ==================== FINAL OVERRIDES ==================== */
+    /* Ensure main content is white */
+    .main * {
+        color: white !important;
+    }
+    
+    /* But keep chat messages dark */
+    .stChatMessage *,
+    .stStatus *,
+    .stChatInput * {
+        color: #1a1a2e !important;
     }
 </style>
 """, unsafe_allow_html=True)
-
 # Initialize
 auth_manager = AuthManager()
 db = Database()
