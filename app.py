@@ -14,38 +14,24 @@ st.set_page_config(
 )
 
 
-# Enhanced Custom CSS - Replace the st.markdown CSS section with this
+# Replace your st.markdown CSS section with this complete solution
 
 st.markdown("""
 <style>
     /* Import Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     
-    /* ==================== FORCE OVERRIDE STREAMLIT THEME ==================== */
-    /* This must come first to override dark mode */
-    body, html, #root, .stApp, [data-testid="stAppViewContainer"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%) !important;
-        background-size: 400% 400% !important;
-        animation: gradientShift 15s ease infinite !important;
-    }
-    
-    /* Global Font */
-    * {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    }
-    
-    /* ==================== MAIN BACKGROUND ==================== */
-    /* Force override Streamlit's default background */
-    .stApp,
+    /* ==================== FORCE LIGHT MODE & OVERRIDE STREAMLIT DARK THEME ==================== */
+    /* This is the key fix - force everything to use light theme */
+    .stApp, 
     [data-testid="stAppViewContainer"],
-    [data-testid="stApp"],
     section[data-testid="stMain"],
-    .main {
+    .main,
+    body {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%) !important;
         background-size: 400% 400% !important;
         animation: gradientShift 15s ease infinite !important;
-        min-height: 100vh;
-        position: relative;
+        color-scheme: light !important;
     }
     
     @keyframes gradientShift {
@@ -54,11 +40,20 @@ st.markdown("""
         100% { background-position: 0% 50%; }
     }
     
+    /* Force all Streamlit elements to light theme */
+    .stMarkdown,
+    .stMarkdownContainer,
+    [data-testid="stMarkdownContainer"] {
+        color-scheme: light !important;
+    }
+    
+    /* Global Font */
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    }
+    
     /* Animated background overlay */
-    .stApp::before,
-    [data-testid="stAppViewContainer"]::before,
-    section[data-testid="stMain"]::before,
-    .main::before {
+    .stApp::before {
         content: '';
         position: fixed;
         top: 0;
@@ -87,68 +82,19 @@ st.markdown("""
         border-right: 1px solid rgba(255, 255, 255, 0.1);
     }
     
-    [data-testid="stSidebar"]::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: 
-            linear-gradient(45deg, transparent 30%, rgba(102, 126, 234, 0.05) 50%, transparent 70%);
-        animation: sidebarShine 3s ease-in-out infinite;
-        pointer-events: none;
-    }
-    
-    @keyframes sidebarShine {
-        0%, 100% { opacity: 0; }
-        50% { opacity: 1; }
-    }
-    
-    [data-testid="stSidebar"][aria-expanded="true"] {
-        animation: slideInSmooth 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    @keyframes slideInSmooth {
-        from {
-            transform: translateX(-100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    /* Sidebar text colors */
     [data-testid="stSidebar"] * {
         color: white !important;
     }
     
-    /* ==================== CHAT MESSAGES ==================== */
+    /* ==================== CHAT MESSAGES - FIX BLACK BOXES ==================== */
     .stChatMessage {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 100%) !important;
-        border-radius: 20px;
-        padding: 24px;
-        margin: 20px 0;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: white !important;
+        border-radius: 20px !important;
+        padding: 24px !important;
+        margin: 20px 0 !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12) !important;
+        border: 1px solid rgba(0, 0, 0, 0.05) !important;
         animation: messageSlideIn 0.5s ease-out;
-    }
-    
-    /* Force all content inside chat messages to be visible */
-    .stChatMessage * {
-        color: #1a1a2e !important;
-    }
-    
-    .stChatMessage .stMarkdown {
-        color: #1a1a2e !important;
-    }
-    
-    .stChatMessage [data-testid="stMarkdownContainer"] {
-        color: #1a1a2e !important;
     }
     
     @keyframes messageSlideIn {
@@ -162,66 +108,100 @@ st.markdown("""
         }
     }
     
-    .stChatMessage:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    }
-    
-    /* Chat message text */
-    .stChatMessage p, 
+    /* Force all text in chat messages to be dark and visible */
+    .stChatMessage,
+    .stChatMessage *,
+    .stChatMessage p,
     .stChatMessage span,
-    .stChatMessage div {
-        color: #1a1a2e !important;
-        line-height: 1.6;
+    .stChatMessage div,
+    .stChatMessage li,
+    .stChatMessage h1,
+    .stChatMessage h2,
+    .stChatMessage h3,
+    .stChatMessage h4,
+    .stChatMessage h5,
+    .stChatMessage h6 {
+        color: #1e293b !important;
+        background: transparent !important;
     }
     
-    /* Fix code blocks in chat messages */
+    /* Fix code blocks - light gray background, dark text */
     .stChatMessage code {
-        background: #f1f5f9 !important;
+        background-color: #f1f5f9 !important;
         color: #1e293b !important;
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-family: 'Courier New', monospace;
+        padding: 2px 6px !important;
+        border-radius: 4px !important;
+        font-family: 'Courier New', monospace !important;
+        font-size: 0.9em !important;
     }
     
+    /* Fix pre-formatted code blocks */
     .stChatMessage pre {
-        background: #f1f5f9 !important;
+        background-color: #f1f5f9 !important;
         color: #1e293b !important;
-        padding: 12px;
-        border-radius: 8px;
-        overflow-x: auto;
-        border: 1px solid #e2e8f0;
+        padding: 16px !important;
+        border-radius: 8px !important;
+        overflow-x: auto !important;
+        border: 1px solid #e2e8f0 !important;
+        margin: 12px 0 !important;
     }
     
     .stChatMessage pre code {
         background: transparent !important;
-        padding: 0;
+        padding: 0 !important;
+        color: #1e293b !important;
     }
     
-    /* Fix lists in chat messages */
+    /* Fix markdown headings in messages */
+    .stChatMessage h1,
+    .stChatMessage h2,
+    .stChatMessage h3 {
+        color: #1e293b !important;
+        font-weight: 700 !important;
+        margin: 16px 0 8px 0 !important;
+    }
+    
+    /* Fix lists in messages */
     .stChatMessage ul,
     .stChatMessage ol {
-        color: #1a1a2e !important;
+        color: #1e293b !important;
+        margin: 12px 0 !important;
+        padding-left: 24px !important;
     }
     
     .stChatMessage li {
-        color: #1a1a2e !important;
-        margin: 8px 0;
+        color: #1e293b !important;
+        margin: 4px 0 !important;
+        line-height: 1.6 !important;
     }
     
-    .stChatMessage li code {
-        background: #f1f5f9 !important;
+    /* Fix strong/bold text */
+    .stChatMessage strong,
+    .stChatMessage b {
         color: #1e293b !important;
+        font-weight: 700 !important;
+    }
+    
+    /* Fix emphasis/italic text */
+    .stChatMessage em,
+    .stChatMessage i {
+        color: #1e293b !important;
+    }
+    
+    /* Fix links in messages */
+    .stChatMessage a {
+        color: #667eea !important;
+        text-decoration: underline !important;
     }
     
     /* Chat avatars */
     .stChatMessage [data-testid="chatAvatarIcon-user"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
     
     .stChatMessage [data-testid="chatAvatarIcon-assistant"] {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
         box-shadow: 0 4px 12px rgba(240, 147, 251, 0.4);
     }
     
@@ -237,36 +217,12 @@ st.markdown("""
         padding: 0.65rem 1.2rem;
         font-size: 0.95rem;
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-        position: relative;
-        overflow: hidden;
-    }
-    
-    .stButton>button::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.2);
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-    
-    .stButton>button:hover::before {
-        width: 300px;
-        height: 300px;
     }
     
     .stButton>button:hover {
         transform: translateY(-3px);
         box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
         background: linear-gradient(135deg, #5568d3 0%, #6a3d8f 100%) !important;
-    }
-    
-    .stButton>button:active {
-        transform: translateY(-1px);
     }
     
     /* ==================== HEADERS ==================== */
@@ -298,29 +254,6 @@ st.markdown("""
         text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
     }
     
-    /* All main content text - but NOT inputs, labels, or form elements */
-    .main > div > div > div > h1,
-    .main > div > div > div > h2,
-    .main > div > div > div > h3 {
-        color: white !important;
-        font-weight: 500;
-    }
-    
-    /* Subtitle styling - only for chatbot page */
-    .main > div > div > div:first-child p[style*="text-align: center"] {
-        color: rgba(255, 255, 255, 0.95) !important;
-        font-weight: 600 !important;
-        font-size: 1.15em !important;
-        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        animation: fadeIn 1s ease-out 0.3s both;
-        display: none !important; /* Hide subtitle */
-    }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
     /* ==================== USER INFO CARD ==================== */
     .user-info {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
@@ -335,13 +268,8 @@ st.markdown("""
     }
     
     .user-info:hover {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.15) 100%) !important;
         transform: translateY(-2px);
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    }
-    
-    .user-info h4, .user-info p {
-        color: white !important;
     }
     
     /* ==================== SIDEBAR BUTTONS ==================== */
@@ -349,13 +277,11 @@ st.markdown("""
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.1) 100%) !important;
         color: white !important;
         border: 1px solid rgba(255, 255, 255, 0.2);
-        backdrop-filter: blur(10px);
     }
     
     [data-testid="stSidebar"] .stButton>button:hover {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
         transform: translateX(5px);
-        border-color: rgba(255, 255, 255, 0.4);
     }
     
     /* ==================== TOOL INDICATOR ==================== */
@@ -388,12 +314,11 @@ st.markdown("""
     
     /* ==================== STATUS CONTAINER ==================== */
     .stStatus {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%) !important;
-        border-radius: 16px;
-        border: 2px solid rgba(102, 126, 234, 0.3);
+        background: white !important;
+        border-radius: 16px !important;
+        border: 2px solid rgba(102, 126, 234, 0.3) !important;
         color: #1a1a2e !important;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-        backdrop-filter: blur(10px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1) !important;
     }
     
     .stStatus * {
@@ -423,28 +348,15 @@ st.markdown("""
         backdrop-filter: blur(10px);
         box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2);
         font-weight: 500;
-        animation: successSlide 0.5s ease-out;
-    }
-    
-    @keyframes successSlide {
-        from {
-            opacity: 0;
-            transform: translateX(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateX(0);
-        }
     }
     
     /* ==================== CHAT INPUT ==================== */
     .stChatInputContainer {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%) !important;
-        border-radius: 20px;
-        padding: 15px;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-        border: 2px solid rgba(102, 126, 234, 0.2);
-        backdrop-filter: blur(20px);
+        background: white !important;
+        border-radius: 20px !important;
+        padding: 15px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15) !important;
+        border: 2px solid rgba(102, 126, 234, 0.2) !important;
     }
     
     .stChatInput textarea {
@@ -454,13 +366,11 @@ st.markdown("""
         border-radius: 12px !important;
         padding: 12px !important;
         font-size: 1rem !important;
-        transition: all 0.3s ease;
     }
     
     .stChatInput textarea:focus {
         border-color: #667eea !important;
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
-        outline: none !important;
     }
     
     /* ==================== EXPANDER ==================== */
@@ -469,13 +379,7 @@ st.markdown("""
         color: white !important;
         border-radius: 12px;
         font-weight: 600;
-        transition: all 0.3s ease;
         border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .streamlit-expanderHeader:hover {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.2) 100%) !important;
-        transform: translateX(5px);
     }
     
     .streamlit-expanderContent {
@@ -484,7 +388,6 @@ st.markdown("""
         color: white !important;
         border: 1px solid rgba(255, 255, 255, 0.1);
         border-top: none;
-        backdrop-filter: blur(10px);
     }
     
     /* ==================== SCROLLBAR ==================== */
@@ -496,7 +399,6 @@ st.markdown("""
     ::-webkit-scrollbar-track {
         background: rgba(255, 255, 255, 0.1);
         border-radius: 10px;
-        margin: 5px;
     }
     
     ::-webkit-scrollbar-thumb {
@@ -517,18 +419,6 @@ st.markdown("""
         margin: 2rem 0;
     }
     
-    /* ==================== CAPTIONS ==================== */
-    .stCaption {
-        color: rgba(255, 255, 255, 0.85) !important;
-        font-weight: 500;
-    }
-    
-    /* ==================== HIDE SPECIFIC ELEMENTS ==================== */
-    /* Only hide the menu hint in the header area */
-    .main > div > div > div:first-child [data-testid="column"]:last-child {
-        display: none !important;
-    }
-    
     /* ==================== RESPONSIVE DESIGN ==================== */
     @media (max-width: 768px) {
         .main h1 {
@@ -541,12 +431,8 @@ st.markdown("""
         }
         
         .stChatMessage {
-            padding: 18px;
-            margin: 15px 0;
-        }
-        
-        .block-container {
-            padding: 1rem 0.5rem !important;
+            padding: 18px !important;
+            margin: 15px 0 !important;
         }
     }
     
@@ -555,71 +441,14 @@ st.markdown("""
             font-size: 1.5rem !important;
         }
         
-        .user-info {
-            padding: 15px;
-        }
-        
         .stButton>button {
             padding: 0.5rem 1rem;
             font-size: 0.9rem;
         }
-        
-        .tool-indicator {
-            font-size: 0.85em;
-            padding: 8px 14px;
-        }
-    }
-    
-    /* ==================== LOADING ANIMATIONS ==================== */
-    @keyframes shimmer {
-        0% {
-            background-position: -1000px 0;
-        }
-        100% {
-            background-position: 1000px 0;
-        }
-    }
-    
-    /* ==================== HOVER EFFECTS ==================== */
-    .stChatMessage:hover::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.05), transparent);
-        pointer-events: none;
-        border-radius: 20px;
-    }
-    
-    /* ==================== FINAL OVERRIDES ==================== */
-    /* Only force white color on headers in main area */
-    .main h1,
-    .main h2,
-    .main h3 {
-        color: white !important;
-    }
-    
-    /* Keep chat messages, status, and inputs dark */
-    .stChatMessage *,
-    .stStatus *,
-    .stChatInput *,
-    .stTextInput *,
-    input,
-    textarea,
-    label,
-    .stButton button span {
-        color: #1a1a2e !important;
-    }
-    
-    /* Make sure form elements are visible */
-    .stTextInput input {
-        color: #1a1a2e !important;
-        background: white !important;
     }
 </style>
 """, unsafe_allow_html=True)
+
 
 
 # Initialize
