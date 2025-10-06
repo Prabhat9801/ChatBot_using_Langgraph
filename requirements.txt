@@ -7,4 +7,4 @@ langchain-community
 duckduckgo-search
 python-dotenv
 requests
-sqlite3
+
