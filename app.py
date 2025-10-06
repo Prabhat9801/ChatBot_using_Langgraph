@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS
+# Custom CSS - FIXED
 st.markdown("""
 
     .main {
@@ -225,7 +225,7 @@ with st.sidebar:
             
             with col1:
                 if st.button(
-                    f"💭 {conv['title'][:30]}...",
+                    f"💭 {conv['title'][:30]}",
                     key=f"load_{conv['id']}",
                     use_container_width=True
                 ):
@@ -336,3 +336,124 @@ if user_input:
     st.session_state.message_history.append(
         {"role": "assistant", "content": ai_message}
     )
+```
+
+---
+
+### 2. **Quick Fix for Existing Deployment**
+
+If you want a quick fix without authentication (simpler), here's the minimal working version:
+
+**SIMPLE app.py (No Auth)**
+
+```python
+import streamlit as st
+from Langgraph_tool_backend import create_chatbot, retrieve_user_threads, generate_conversation_title
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
+from database import Database
+import uuid
+
+st.set_page_config(
+    page_title="LangGraph AI Chatbot",
+    page_icon="🤖",
+    layout="wide"
+)
+
+# Simple user ID for demo (no auth)
+USER_ID = 1
+
+# Initialize database
+db = Database()
+
+# Session state
+if "chatbot" not in st.session_state:
+    st.session_state.chatbot = create_chatbot(USER_ID)
+
+if "message_history" not in st.session_state:
+    st.session_state.message_history = []
+
+if "thread_id" not in st.session_state:
+    st.session_state.thread_id = str(uuid.uuid4())
+    db.create_conversation(USER_ID, st.session_state.thread_id, "New Chat")
+
+if "conversations" not in st.session_state:
+    st.session_state.conversations = db.get_user_conversations(USER_ID)
+
+# Sidebar
+with st.sidebar:
+    st.title("🤖 LangGraph AI")
+    
+    if st.button("➕ New Chat"):
+        thread_id = str(uuid.uuid4())
+        st.session_state.thread_id = thread_id
+        st.session_state.message_history = []
+        db.create_conversation(USER_ID, thread_id, "New Chat")
+        st.session_state.conversations = db.get_user_conversations(USER_ID)
+        st.rerun()
+    
+    st.header("My Conversations")
+    for conv in st.session_state.conversations:
+        if st.button(conv['title'][:40], key=conv['id']):
+            st.session_state.thread_id = conv['id']
+            state = st.session_state.chatbot.get_state(
+                config={"configurable": {"thread_id": conv['id']}}
+            )
+            messages = state.values.get("messages", [])
+            temp_messages = []
+            for msg in messages:
+                if isinstance(msg, (HumanMessage, AIMessage)):
+                    role = "user" if isinstance(msg, HumanMessage) else "assistant"
+                    temp_messages.append({"role": role, "content": msg.content})
+            st.session_state.message_history = temp_messages
+            st.rerun()
+
+# Main
+st.title("🤖 LangGraph AI Chatbot")
+
+for message in st.session_state.message_history:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+user_input = st.chat_input("Ask me anything...")
+
+if user_input:
+    if len(st.session_state.message_history) == 0:
+        title = generate_conversation_title(user_input)
+        db.update_conversation_title(st.session_state.thread_id, title)
+        st.session_state.conversations = db.get_user_conversations(USER_ID)
+    
+    st.session_state.message_history.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.markdown(user_input)
+    
+    CONFIG = {
+        "configurable": {"thread_id": st.session_state.thread_id},
+        "metadata": {"thread_id": st.session_state.thread_id},
+        "run_name": "chat_turn",
+    }
+    
+    with st.chat_message("assistant"):
+        status_holder = {"box": None}
+        
+        def ai_stream():
+            for message_chunk, metadata in st.session_state.chatbot.stream(
+                {"messages": [HumanMessage(content=user_input)]},
+                config=CONFIG,
+                stream_mode="messages",
+            ):
+                if isinstance(message_chunk, ToolMessage):
+                    tool_name = getattr(message_chunk, "name", "tool")
+                    if status_holder["box"] is None:
+                        status_holder["box"] = st.status(f"🔧 {tool_name}...", expanded=True)
+                    else:
+                        status_holder["box"].update(label=f"🔧 {tool_name}...", state="running")
+                
+                if isinstance(message_chunk, AIMessage):
+                    yield message_chunk.content
+        
+        ai_message = st.write_stream(ai_stream())
+        
+        if status_holder["box"] is not None:
+            status_holder["box"].update(label="✅ Complete", state="complete", expanded=False)
+    
+    st.session_state.message_history.append({"role": "assistant", "content": ai_message})
