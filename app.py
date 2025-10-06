@@ -20,12 +20,25 @@ st.markdown("""
     /* Import Google Fonts */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     
+    /* ==================== FORCE OVERRIDE STREAMLIT THEME ==================== */
+    /* This must come first to override dark mode */
+    body, html, #root, .stApp, [data-testid="stAppViewContainer"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%) !important;
+        background-size: 400% 400% !important;
+        animation: gradientShift 15s ease infinite !important;
+    }
+    
     /* Global Font */
     * {
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     }
     
     /* ==================== MAIN BACKGROUND ==================== */
+    /* Force override Streamlit's default background */
+    .stApp,
+    [data-testid="stAppViewContainer"],
+    [data-testid="stApp"],
+    section[data-testid="stMain"],
     .main {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #4facfe 75%, #00f2fe 100%) !important;
         background-size: 400% 400% !important;
@@ -41,6 +54,9 @@ st.markdown("""
     }
     
     /* Animated background overlay */
+    .stApp::before,
+    [data-testid="stAppViewContainer"]::before,
+    section[data-testid="stMain"]::before,
     .main::before {
         content: '';
         position: fixed;
